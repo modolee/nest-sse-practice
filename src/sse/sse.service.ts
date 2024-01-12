@@ -1,24 +1,29 @@
 import { Injectable } from '@nestjs/common';
-import { Subject, filter, map } from 'rxjs';
+import { Observable, filter, map } from 'rxjs';
 import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class SseService {
-  private user: Subject<User> = new Subject();
-  private userObserverable$ = this.user.asObservable();
+  private userObservable$: Observable<User>;
+
+  constructor() {
+    this.userObservable$ = new Observable<User>((observer) => {
+      this.userObserver = observer;
+    });
+  }
+
+  private userObserver: any;
 
   sendUserInfo(id: number) {
-    return this.userObserverable$.pipe(
-      filter((user) => {
-        return user.id === id;
-      }),
-      map((user) => {
-        return { data: user };
-      }),
+    return this.userObservable$.pipe(
+      filter((user) => user.id === id),
+      map((user) => ({ data: user })),
     );
   }
 
   onUserInfoChange(user: User) {
-    this.user.next(user);
+    if (this.userObserver) {
+      this.userObserver.next(user);
+    }
   }
 }
