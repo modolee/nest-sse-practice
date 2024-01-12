@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Observable, filter, map } from 'rxjs';
+import { Observable, Subscriber, filter, map } from 'rxjs';
 import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class SseService {
+  private userObserver: Subscriber<User>;
   private userObservable$: Observable<User>;
 
   constructor() {
@@ -11,8 +12,6 @@ export class SseService {
       this.userObserver = observer;
     });
   }
-
-  private userObserver: any;
 
   sendUserInfo(id: number) {
     return this.userObservable$.pipe(
